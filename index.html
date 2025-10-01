@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Insurance Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e6f7e6;
+      border: 1px solid #b3e6b3;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Medical Insurance Predictor</h1>
+
+    <label for="age">Age</label>
+    <input type="number" id="age" min="18" max="64" value="30">
+
+    <label for="bmi">BMI</label>
+    <input type="number" step="0.1" id="bmi" min="15" max="50" value="25">
+
+    <label for="children">Number of Children</label>
+    <input type="number" id="children" min="0" max="5" value="0">
+
+    <label for="smoker">Are you a Smoker?</label>
+    <select id="smoker">
+      <option value="0">No</option>
+      <option value="1">Yes</option>
+    </select>
+
+    <label for="sex">Gender</label>
+    <select id="sex">
+      <option value="0">Male</option>
+      <option value="1">Female</option>
+    </select>
+
+    <button onclick="predict()">Predict Insurance Charges</button>
+
+    <div id="output" class="result" style="display:none;"></div>
+  </div>
+
+  <script>
+    async function predict() {
+      const age = parseInt(document.getElementById("age").value);
+      const bmi = parseFloat(document.getElementById("bmi").value);
+      const children = parseInt(document.getElementById("children").value);
+      const smoker = parseInt(document.getElementById("smoker").value);
+      const sex = parseInt(document.getElementById("sex").value);
+
+      // 🚨 Here you would normally call your Flask/FastAPI backend
+      // Example placeholder call (adjust backend API endpoint accordingly):
+      // const response = await fetch("http://127.0.0.1:5000/predict", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ age, bmi, children, smoker, sex })
+      // });
+      // const data = await response.json();
+
+      // --- Mock prediction for demo (replace with backend response) ---
+      let prediction_in_usd = (200 + age * 12 + bmi * 15 + children * 50 + smoker * 2000 + sex * 100).toFixed(2);
+
+      // Fetch live currency exchange rates
+      const res = await fetch("https://open.er-api.com/v6/latest/USD");
+      const currencyData = await res.json();
+
+      const currencySymbols = { INR: "₹", EUR: "€", GBP: "£", JPY: "¥", AUD: "A$" };
+      let converted = "";
+      for (const [currency, symbol] of Object.entries(currencySymbols)) {
+        const rate = currencyData.rates[currency] || 1;
+        converted += `<br>${currency}: ${(prediction_in_usd * rate).toFixed(2)} ${symbol}`;
+      }
+
+      document.getElementById("output").style.display = "block";
+      document.getElementById("output").innerHTML = `
+        <strong>Predicted Insurance Charges (USD):</strong> $${prediction_in_usd}
+        <br><br><strong>Converted Charges:</strong> ${converted}
+      `;
+    }
+  </script>
+</body>
+</html>
